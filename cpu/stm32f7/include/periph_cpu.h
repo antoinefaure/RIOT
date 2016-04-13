@@ -7,13 +7,13 @@
  */
 
 /**
- * @ingroup         cpu_stm32f4
+ * @ingroup         cpu_stm32f7
  * @{
  *
  * @file
  * @brief           CPU specific definitions for internal peripheral handling
  *
- * @author          Hauke Petersen <hauke.peterse@fu-berlin.de>
+ * @author          Antoine Faure <antoine.faure@openwide.fr>
  */
 
 #ifndef PERIPH_CPU_H
@@ -26,62 +26,22 @@ extern "C" {
 #endif
 
 /**
- * @brief   Available number of ADC devices
- */
-#if defined(CPU_MODEL_STM32F401RE)
-#define ADC_DEVS            (1U)
-#elif defined(CPU_MODEL_STM32F407VG) || defined(CPU_MODEL_STM32F415RG)
-#define ADC_DEVS            (3U)
-#endif
-
-/**
- * @brief declare needed generic SPI functions
+ * @brief   Overwrite the default gpio_t type definition
  * @{
  */
-#define PERIPH_SPI_NEEDS_TRANSFER_BYTES
-#define PERIPH_SPI_NEEDS_TRANSFER_REG
-#define PERIPH_SPI_NEEDS_TRANSFER_REGS
+#define HAVE_GPIO_T
+typedef uint32_t gpio_t;
 /** @} */
 
 /**
- * @brief   Override the ADC resolution configuration
- * @{
+ * @brief   Definition of a fitting UNDEF value
  */
-#define HAVE_ADC_RES_T
-typedef enum {
-    ADC_RES_6BIT  = 0x03000000,  /**< ADC resolution: 6 bit */
-    ADC_RES_8BIT  = 0x02000000,  /**< ADC resolution: 8 bit */
-    ADC_RES_10BIT = 0x01000000,  /**< ADC resolution: 10 bit */
-    ADC_RES_12BIT = 0x00000000,  /**< ADC resolution: 12 bit */
-    ADC_RES_14BIT = 1,           /**< ADC resolution: 14 bit (not supported) */
-    ADC_RES_16BIT = 2            /**< ADC resolution: 16 bit (not supported)*/
-} adc_res_t;
-/** @} */
+#define GPIO_UNDEF          (0xffffffff)
 
 /**
- * @brief   Generate GPIO mode bitfields
- *
- * We use 5 bit to encode the mode:
- * - bit 0+1: pin mode (input / output)
- * - bit 2+3: pull resistor configuration
- * - bit   4: output type (0: push-pull, 1: open-drain)
+ * @brief   Define a CPU specific GPIO pin generator macro
  */
-#define GPIO_MODE(io, pr, ot)   ((io << 0) | (pr << 2) | (ot << 4))
-
-/**
- * @brief   Override GPIO mode options
- * @{
- */
-#define HAVE_GPIO_MODE_T
-typedef enum {
-    GPIO_IN    = GPIO_MODE(0, 0, 0),    /**< input w/o pull R */
-    GPIO_IN_PD = GPIO_MODE(0, 2, 0),    /**< input with pull-down */
-    GPIO_IN_PU = GPIO_MODE(0, 1, 0),    /**< input with pull-up */
-    GPIO_OUT   = GPIO_MODE(1, 0, 0),    /**< push-pull output */
-    GPIO_OD    = GPIO_MODE(1, 0, 1),    /**< open-drain w/o pull R */
-    GPIO_OD_PU = GPIO_MODE(1, 1, 1)     /**< open-drain with pull-up */
-} gpio_mode_t;
-/** @} */
+#define GPIO_PIN(x, y)      ((GPIOA_BASE + (x << 10)) | y)
 
 /**
  * @brief   Available ports on the STM32F4 family
@@ -129,29 +89,11 @@ typedef struct {
     gpio_t rx_pin;          /**< RX pin */
     gpio_t tx_pin;          /**< TX pin */
     gpio_af_t af;           /**< alternate pin function to use */
-    uint8_t bus;            /**< APB bus */
     uint8_t irqn;           /**< IRQ channel */
     uint8_t dma_stream;     /**< DMA stream used for TX */
     uint8_t dma_chan;       /**< DMA channel used for TX */
 } uart_conf_t;
 /** @} */
-
-/**
- * @brief   ADC channel configuration data
- */
-typedef struct {
-    gpio_t pin;             /**< pin connected to the channel */
-    uint8_t dev;            /**< ADCx - 1 device used for the channel */
-    uint8_t chan;           /**< CPU ADC channel connected to the pin */
-} adc_conf_t;
-
-/**
- * @brief   DAC line configuration data
- */
-typedef struct {
-    gpio_t pin;             /**< pin connected to the line */
-    uint8_t chan;           /**< DAC device used for this line */
-} dac_conf_t;
 
 /**
  * @brief   Configure the alternate function for the given pin
@@ -242,14 +184,14 @@ static inline void dma_isr_enable(int stream)
     if (stream < 7) {
         NVIC_EnableIRQ((IRQn_Type)((int)DMA1_Stream0_IRQn + stream));
     }
-    else if (stream == 7) {
+    else if (stream == 8) {
         NVIC_EnableIRQ(DMA1_Stream7_IRQn);
     }
-    else if (stream < 13) {
-        NVIC_EnableIRQ((IRQn_Type)((int)DMA2_Stream0_IRQn + (stream - 8)));
+    else if (stream < 14) {
+        NVIC_EnableIRQ((IRQn_Type)((int)DMA2_Stream0_IRQn + stream));
     }
-    else if (stream < 16) {
-        NVIC_EnableIRQ((IRQn_Type)((int)DMA2_Stream5_IRQn + (stream - 13)));
+    else if (stream < 17) {
+        NVIC_EnableIRQ((IRQn_Type)((int)DMA2_Stream5_IRQn + stream));
     }
 }
 

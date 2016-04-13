@@ -7,15 +7,15 @@
  */
 
 /**
- * @defgroup        cpu_stm32f4 STM32F4
+ * @defgroup        cpu_stm32f7 STM32F7
  * @ingroup         cpu
- * @brief           CPU specific implementations for the STM32F4
+ * @brief           CPU specific implementations for the STM32F7
  * @{
  *
  * @file
  * @brief           Implementation specific CPU configuration options
  *
- * @author          Hauke Petersen <hauke.peterse@fu-berlin.de>
+ * @author          Antoine Faure <antoine.faure@openwide.fr>
  */
 
 #ifndef __CPU_CONF_H
@@ -23,13 +23,12 @@
 
 #include "cpu_conf_common.h"
 
-#if defined(CPU_MODEL_STM32F401RE)
-#include "stm32f401xe.h"
-#elif defined(CPU_MODEL_STM32F407VG)
-#include "stm32f407xx.h"
-#elif defined(CPU_MODEL_STM32F415RG)
-#include "stm32f415xx.h"
+#if defined(CPU_MODEL_STM32F746NG)
+#include "stm32f746xx.h"
 #endif
+/**
+ * \todo : include the others headers for the others MCUs
+ */
 
 #ifdef __cplusplus
 extern "C" {
