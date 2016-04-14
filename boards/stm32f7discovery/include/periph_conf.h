@@ -7,12 +7,13 @@
  */
 
 /**
- * @ingroup     boards_stm32f4discovery
+ * @ingroup     boards_stm32f7discovery
  * @{
  *
  * @file
  * @name        Peripheral MCU configuration for the STM32F4discovery board
  *
+ * @author      Antoine Faure <antoine@afaure.fr>
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
  * @author      Peter Kietzmann <peter.kietzmann@haw-hamburg.de>
  */
@@ -30,8 +31,8 @@ extern "C" {
  * @name Clock system configuration
  * @{
  */
-#define CLOCK_HSE           (8000000U)          /* external oscillator */
-#define CLOCK_CORECLOCK     (168000000U)        /* desired core clock frequency */
+#define CLOCK_HSE           (25000000U)          /* external oscillator */
+#define CLOCK_CORECLOCK     (200000000U)        /* desired core clock frequency */
 
 /* the actual PLL values are automatically generated */
 #define CLOCK_PLL_M         (CLOCK_HSE / 1000000)
@@ -83,34 +84,21 @@ extern "C" {
  */
 static const uart_conf_t uart_config[] = {
     {
-        .dev        = USART2,
-        .rcc_mask   = RCC_APB1ENR_USART2EN,
-        .rx_pin     = GPIO_PIN(PORT_A,3),
-        .tx_pin     = GPIO_PIN(PORT_A,2),
-        .af         = GPIO_AF7,
-        .bus        = APB1,
-        .irqn       = USART2_IRQn,
+        .dev        = USART6,
+        .rcc_mask   = RCC_APB2ENR_USART6EN,
+        .rx_pin     = GPIO_PIN(PORT_C,7),
+        .tx_pin     = GPIO_PIN(PORT_C,6),
+        .af         = GPIO_AF8,
+        .bus        = APB1, /* @TODO check the bus */
+        .irqn       = USART6_IRQn,
         .dma_stream = 6,
-        .dma_chan   = 4
-    },
-    {
-        .dev        = USART3,
-        .rcc_mask   = RCC_APB1ENR_USART3EN,
-        .rx_pin     = GPIO_PIN(PORT_D,9),
-        .tx_pin     = GPIO_PIN(PORT_D,8),
-        .af         = GPIO_AF7,
-        .bus        = APB1,
-        .irqn       = USART3_IRQn,
-        .dma_stream = 3,
         .dma_chan   = 4
     },
 };
 
 /* assign ISR vector names */
-#define UART_0_ISR          isr_usart2
+#define UART_0_ISR          isr_usart6
 #define UART_0_DMA_ISR      isr_dma1_stream6
-#define UART_1_ISR          isr_usart3
-#define UART_1_DMA_ISR      isr_dma1_stream3
 
 /* deduct number of defined UART interfaces */
 #define UART_NUMOF          (sizeof(uart_config) / sizeof(uart_config[0]))
