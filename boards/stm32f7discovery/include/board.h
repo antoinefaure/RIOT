@@ -7,14 +7,15 @@
  */
 
 /**
- * @defgroup    boards_stm32f4discovery STM32F4Discovery
+ * @defgroup    boards_stm32f7discovery STM32F7Discovery
  * @ingroup     boards
- * @brief       Board specific files for the STM32F4Discovery board
+ * @brief       Board specific files for the STM32F7Discovery board
  * @{
  *
  * @file
- * @brief       Board specific definitions for the STM32F4Discovery evaluation board
+ * @brief       Board specific definitions for the STM32F7Discovery evaluation board
  *
+ * @author      Antoine Faure <antoine@afaure.fr>
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
  */
 
@@ -48,32 +49,20 @@ extern "C" {
  * @name Macros for controlling the on-board LEDs.
  * @{
  */
-#define LED0_PIN            GPIO_PIN(PORT_D, 13)
-#define LED1_PIN            GPIO_PIN(PORT_D, 12)
-#define LED2_PIN            GPIO_PIN(PORT_D, 14)
-#define LED3_PIN            GPIO_PIN(PORT_D, 15)
+#define LED1_PIN            GPIO_PIN(PORT_I, 2)
 
-#define LED_PORT            GPIOD
-#define LED0_MASK           (1 << 13)
-#define LED1_MASK           (1 << 12)
-#define LED2_MASK           (1 << 14)
-#define LED3_MASK           (1 << 15)
+#define LED_PORT            GPIOI
+#define LED1_MASK           (1 << 2)
 
-#define LED0_ON             (LED_PORT->BSRRL = LED0_MASK)
-#define LED0_OFF            (LED_PORT->BSRRH = LED0_MASK)
-#define LED0_TOGGLE         (LED_PORT->ODR  ^= LED0_MASK)
+#define LD1_ON              (LED_PORT->BSRR = LD1_PIN)
+#define LD1_OFF             (LED_PORT->BSRR = ((uint32_t)LD1_PIN << 16))
+#define LD1_TOGGLE          (LED_PORT->ODR ^= LD1_PIN)
 
-#define LED1_ON             (LED_PORT->BSRRL = LED1_MASK)
-#define LED1_OFF            (LED_PORT->BSRRH = LED1_MASK)
-#define LED1_TOGGLE         (LED_PORT->ODR  ^= LED1_MASK)
+/* for compatability to other boards - same LED as LED 1*/
+#define LED_GREEN_ON        LD1_ON
+#define LED_GREEN_OFF       LD1_OFF
+#define LED_GREEN_TOGGLE    LD1_TOGGLE
 
-#define LED2_ON             (LED_PORT->BSRRL = LED2_MASK)
-#define LED2_OFF            (LED_PORT->BSRRH = LED2_MASK)
-#define LED2_TOGGLE         (LED_PORT->ODR  ^= LED2_MASK)
-
-#define LED3_ON             (LED_PORT->BSRRL = LED3_MASK)
-#define LED3_OFF            (LED_PORT->BSRRH = LED3_MASK)
-#define LED3_TOGGLE         (LED_PORT->ODR  ^= LED3_MASK)
 /** @} */
 
 /**
