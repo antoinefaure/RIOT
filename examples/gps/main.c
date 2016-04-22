@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <periph/uart.h>
 #include <serial_gps.h>
-
+#include <dht.h>
 
 int main(void)
 {
