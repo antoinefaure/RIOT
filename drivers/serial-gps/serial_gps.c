@@ -32,16 +32,17 @@ static uint8_t data_entry[SERIAL_GPS_MAXIMUM_SIZE_OF_ENTRY] = {};
 static uint8_t buffer_index = 0;
 
 
-int checksum(char *s) {
-    int c = 0;
-    while(*s)
-        c ^= *s++;
-    return c;
-}
+//static int checksum(char *s) {
+//    int c = 0;
+//    while(*s)
+//        c ^= *s++;
+//    return c;
+//}
 
-
+/* @TODO change this */
 static void process_entry(void)
 {
+    printf ("process entry : \n");
     printf("%s \n", data_entry);
     buffer_index = 0;
 }
@@ -49,9 +50,8 @@ static void process_entry(void)
 
 static void data_received (void *arg, const uint8_t data)
 {
-    if ('$' == data) {
-        return;
-    } else if ('\n' == data) {
+    printf("Called : %c = %d\n", data, data);
+    if ('\n' == data) {
         buffer_index++;
         if (buffer_index < SERIAL_GPS_MAXIMUM_SIZE_OF_ENTRY)
             data_entry[buffer_index] = '\0';
