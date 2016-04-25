@@ -11,7 +11,8 @@
  */
 
 #include <stdint.h>
-//#include <string.h>
+#include <stdlib.h>
+#include <string.h>
 #include <periph/uart.h>
 #include "serial_gps.h"
 //#include "log.h"
@@ -31,6 +32,55 @@ static uint8_t data_entry[SERIAL_GPS_MAXIMUM_SIZE_OF_ENTRY] = {};
  */
 static uint8_t buffer_index = 0;
 
+static uint8_t _next_field_as_int(uint8_t index, int32_t *value)
+{
+    uint8_t buffer[64] = {0};
+    uint8_t *nextfield = strpbrk(data_entry+index, ",");
+
+    if (NULL == nextfield)
+        return 0;
+    if((nextfield - index) > 64)
+        return 0;
+
+    memcpy(buffer, data_entry+index, (nextfield-index));
+    *value = atoi(buffer);
+    return 1;
+}
+
+static uint8_t _next_field_as_double(uint8_t index, double *value)
+{
+    uint8_t buffer[64] = {0};
+    uint8_t *nextfield = strpbrk(data_entry+index, ",");
+
+    if (NULL == nextfield)
+        return 0;
+    if((nextfield - index) > 64)
+        return 0;
+
+    memcpy(buffer, data_entry+index, (nextfield-index));
+    *value = atof(buffer);
+    return 1;
+}
+
+static uint8_t _next_field_as_time(uint8_t index, uint8_t *h, uint8_t *m, uint8_t *s)
+{
+    uint8_t buffer[7] = {0}, tmp[3] = {0};
+    uint8_t *nextfield = strpbrk(data_entry+index, ",");
+
+    if (NULL == nextfield)
+        return 0;
+    if((nextfield - index) > 6)
+        return 0;
+
+    memcpy(buffer, data_entry+index, (nextfield-index));
+    memcpy(tmp, buffer, 2);
+    *h = atoi(tmp);
+    memcpy(tmp, buffer+2, 2);
+    *m = atoi(tmp);
+    memcpy(tmp, buffer+4, 2);
+    *s = atoi(tmp);
+    return 1;
+}
 
 //static int checksum(char *s) {
 //    int c = 0;
@@ -39,7 +89,75 @@ static uint8_t buffer_index = 0;
 //    return c;
 //}
 
-/* @TODO change this */
+/**
+ * MSK Receiver Signal
+ */
+static void _handle_mss(uint8_t idx_start)
+{
+}
+
+/**
+ * SiRF timing message
+ */
+static void _handle-zda(uint8_t idx_start)
+{
+}
+
+/**
+ * GNSS DOP and active satellites
+ */
+static void _handle_gsa(uint8_t idx_start)
+{
+}
+
+/**
+ * GNSS satellites in view
+ */
+static void _handle_gsv(uint8_t idx_start)
+{
+}
+
+/**
+ * Geographic position - Latitude / Longitude
+ */
+static void _handle_gll(uint8_t idx_start)
+{
+}
+
+/**
+ * Recommended minimum specific GNSS data
+ */
+static void _handle_rmc(uint8_t idx_start)
+{
+}
+
+/**
+ * Course over ground and ground speed
+ */
+static void _handle_vtg(uint8_t idx_start)
+{
+}
+
+/**
+ * Global positioning system fixed data
+ */
+static void _handle_gga(uint8_t idx_start)
+{
+    uint8_t buffer[64] = {0};
+    uint8_t index = idx_start, *next_index = NULL;
+    uint8_t hour = 0, minute = 0, second = 0;
+    double latitude = 0, longitude = 0;
+    uint8_t direction_latitude = 0, direction_longitude = 0;
+
+    next_index = _next_field_as_time(idx_start, &hour, &minute, &second);
+    if (0 == next_index)
+            return;
+    next_index = _next_field_as_double(next_index, &latitude);
+    if (0 == next_index)
+            return;
+    int tmp;
+    _next_field_as_int(0, &tmp); //REMOVE
+}
 
 static void process_entry(void)
 {
@@ -48,7 +166,8 @@ static void process_entry(void)
     uint8_t buffer[64] = {0};
     int idx = 0;
 
-    while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] || '\n' ==data_entry) {
+    while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] ||
+            '\n' ==data_entry) {
         buffer[idx] = data_entry[idx];
     }
 
@@ -58,19 +177,21 @@ static void process_entry(void)
     }
 
     if (strcmp("$GPGGA", buffer) == 0)
-        _handle_gga();
+        _handle_gga(idx);
     else if (strcmp("$GPGSA", buffer) == 0)
-        _handle_gsa();
+        _handle_gsa(idx);
     else if (strcmp("GPGSV", buffer) == 0)
-        _handle_gsv();
+        _handle_gsv(idx);
     else if (strcmp("GPGLL", buffer) == 0)
-        _handle_gll();
+        _handle_gll(idx);
     else if (strcmp("GPRMC", buffer) == 0)
-        _handle_rmc();
+        _handle_rmc(idx);
     else if (strcmp("GPVTG", buffer) == 0)
-        _handle_vtg();
+        _handle_vtg(idx);
     else
-        // Unknown record
+        return; // Unknown record
+}
+
 }
 
 
