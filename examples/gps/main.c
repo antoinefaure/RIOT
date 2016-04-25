@@ -24,5 +24,7 @@ int main(void)
 
     int8_t ret = serial_gps_init(UART_DEV(1), 115200);
     printf("ret = %d \n", ret);
+    printf ("eol = %d \n", '\n');
+    printf("a = %d\n", 'a');
     return 0;
 }

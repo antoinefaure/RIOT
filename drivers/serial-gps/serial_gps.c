@@ -40,11 +40,37 @@ static uint8_t buffer_index = 0;
 //}
 
 /* @TODO change this */
+
 static void process_entry(void)
 {
     printf ("process entry : \n");
     printf("%s \n", data_entry);
-    buffer_index = 0;
+    uint8_t buffer[64] = {0};
+    int idx = 0;
+
+    while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] || '\n' ==data_entry) {
+        buffer[idx] = data_entry[idx];
+    }
+
+    if (!(',' == data_entry[idx])) {
+        /* Wrong data */
+        return;
+    }
+
+    if (strcmp("$GPGGA", buffer) == 0)
+        _handle_gga();
+    else if (strcmp("$GPGSA", buffer) == 0)
+        _handle_gsa();
+    else if (strcmp("GPGSV", buffer) == 0)
+        _handle_gsv();
+    else if (strcmp("GPGLL", buffer) == 0)
+        _handle_gll();
+    else if (strcmp("GPRMC", buffer) == 0)
+        _handle_rmc();
+    else if (strcmp("GPVTG", buffer) == 0)
+        _handle_vtg();
+    else
+        // Unknown record
 }
 
 
