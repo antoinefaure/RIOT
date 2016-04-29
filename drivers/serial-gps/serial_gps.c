@@ -32,6 +32,28 @@ static uint8_t data_entry[SERIAL_GPS_MAXIMUM_SIZE_OF_ENTRY] = {};
  */
 static uint8_t buffer_index = 0;
 
+
+static uint8_t entry_not_finished(uint8_t *buff)
+{
+    if (NULL = buff)
+        return 0;
+    else if ('\0' == buff[0] || '\n' == buff[0])
+        return 0;
+    else
+        return 1;
+}
+
+
+//static uint8_t next_field_exists(uint8_t *buf)
+//{
+//    if (!entry_not_finished(buf))
+//        return 0;
+//    else if (',' == buf[0] && !entry_not_finished(&buf[1]))
+//        return 1;
+//    else return 0;
+//}
+
+
 static uint8_t *_next_field_as_int(uint8_t* first_index, int32_t *value)
 {
     uint8_t buffer[64] = {0};
@@ -138,6 +160,11 @@ static void _handle_vtg(uint8_t idx_start)
 {
 }
 
+// @TODO verifier dans entry not finished que pas d'overflow ?
+// @TODO dans les fonctions next_field_as verifier que field pas vide
+// De meme quand lis directement (direction)
+
+
 /**
  * Global positioning system fixed data
  */
@@ -145,19 +172,32 @@ static void _handle_gga(uint8_t *idx_start)
 {
     uint8_t *next_index = NULL;
     uint8_t hour = 0, minute = 0, second = 0;
-    double latitude = 0;//, longitude = 0;
-    //uint8_t direction_latitude = 0, direction_longitude = 0;
+    double latitude = 0, longitude = 0;
+    uint8_t direction_latitude = 0, direction_longitude = 0;
     uint8_t *ret = 0;
 
     next_index = _next_field_as_time(idx_start, &hour, &minute, &second);
-    if (0 == ret)
-            return;
+    if (!entry_not_finished(next_index))
+        return;
 
     next_index = _next_field_as_double(next_index, &latitude);
-    if (0 == ret)
-            return;
-    int32_t tmp;
-    ret = _next_field_as_int(next_index, &tmp); //REMOVE
+    if (!entry_not_finished(next_index))
+        return;
+
+    direction_latitude = next_index[1];
+    next_index += 2;
+    if (!entry_not_finished(next_index)
+        return;
+
+    next_index = _next_field_as_double(next_index, &longitude);
+    if (!entry_not_finished(next_index))
+        return;
+
+    direction_longitude = next_index[1];
+    next_index += 2;
+    if (!entry_not_finished(next_index)
+        return;
+
 }
 
 static void process_entry(void)
