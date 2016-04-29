@@ -39,10 +39,10 @@ static uint8_t *_next_field_as_int(uint8_t* first_index, int32_t *value)
 
     if (NULL == nextfield)
         return NULL;
-    if((nextfield - &data_entry[index]) > 64)
+    if((nextfield - first_index) > 64)
         return NULL;
 
-    memcpy(buffer, data_entry+index, (nextfield -1 -&data_entry[index]));
+    memcpy(buffer, first_index, (nextfield -1 - first_index));
     *value = atoi((char*)buffer);
     return nextfield;
 }
@@ -54,10 +54,10 @@ static uint8_t *_next_field_as_double(uint8_t* first_index, double *value)
 
     if (NULL == nextfield)
         return NULL;
-    if((nextfield - &data_entry[index]) > 64)
+    if((nextfield - first_index) > 64)
         return NULL;
 
-    memcpy(buffer, data_entry+index, (nextfield -1 -&data_entry[index]));
+    memcpy(buffer, first_index, (nextfield -1 - first_index));
     *value = atof((char*)buffer);
     return nextfield;
 }
@@ -69,10 +69,10 @@ static uint8_t *_next_field_as_time(uint8_t *first_index, uint8_t *h, uint8_t *m
 
     if (NULL == nextfield)
         return NULL;
-    if((nextfield - &data_entry[index]) > 6)
+    if((nextfield -first_index) > 6)
         return NULL;
 
-    memcpy(buffer, data_entry+index, (nextfield -1 -&data_entry[index]));
+    memcpy(buffer, first_index, (nextfield -1 - first_index));
     memcpy(tmp, buffer, 2);
     *h = atoi((char*)tmp);
     memcpy(tmp, buffer+2, 2);
@@ -92,16 +92,16 @@ static uint8_t *_next_field_as_time(uint8_t *first_index, uint8_t *h, uint8_t *m
 /**
  * MSK Receiver Signal
  */
-static void _handle_mss(uint8_t idx_start)
-{
-}
+//static void _handle_mss(uint8_t idx_start)
+//{
+//}
 
 /**
  * SiRF timing message
  */
-static void _handle_zda(uint8_t idx_start)
-{
-}
+//static void _handle_zda(uint8_t idx_start)
+//{
+//}
 
 /**
  * GNSS DOP and active satellites
@@ -143,33 +143,32 @@ static void _handle_vtg(uint8_t idx_start)
  */
 static void _handle_gga(uint8_t *idx_start)
 {
-    uint8_t buffer[64] = {0};
-    uint8_t index = idx_start, *next_index = NULL;
+    uint8_t *next_index = NULL;
     uint8_t hour = 0, minute = 0, second = 0;
-    double latitude = 0, longitude = 0;
-    uint8_t direction_latitude = 0, direction_longitude = 0;
-    uint8_t ret = 0;
+    double latitude = 0;//, longitude = 0;
+    //uint8_t direction_latitude = 0, direction_longitude = 0;
+    uint8_t *ret = 0;
 
     next_index = _next_field_as_time(idx_start, &hour, &minute, &second);
     if (0 == ret)
             return;
 
-    next_index = _next_field_as_double((next_index, &latitude);
+    next_index = _next_field_as_double(next_index, &latitude);
     if (0 == ret)
             return;
-    int tmp;
+    int32_t tmp;
     ret = _next_field_as_int(next_index, &tmp); //REMOVE
 }
 
 static void process_entry(void)
 {
+    uint8_t idx = 0;
     printf ("process entry : \n");
     printf("%s \n", data_entry);
     uint8_t buffer[64] = {0};
-    int idx = 0;
 
-    while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] ||
-            '\n' ==data_entry) {
+    while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] &&
+            '\n' != data_entry[idx]) {
         buffer[idx] = data_entry[idx];
     }
 
@@ -178,23 +177,23 @@ static void process_entry(void)
         return;
     }
 
-    if (strcmp("$GPGGA", buffer) == 0)
+    if (strcmp("$GPGGA", (char*)buffer) == 0)
         _handle_gga(&buffer[idx]);
-    else if (strcmp("$GPGSA", buffer) == 0)
+    else if (strcmp("$GPGSA", (char*)buffer) == 0)
         _handle_gsa(idx);
-    else if (strcmp("GPGSV", buffer) == 0)
+    else if (strcmp("GPGSV", (char*)buffer) == 0)
         _handle_gsv(idx);
-    else if (strcmp("GPGLL", buffer) == 0)
+    else if (strcmp("GPGLL", (char*)buffer) == 0)
         _handle_gll(idx);
-    else if (strcmp("GPRMC", buffer) == 0)
+    else if (strcmp("GPRMC", (char*)buffer) == 0)
         _handle_rmc(idx);
-    else if (strcmp("GPVTG", buffer) == 0)
+    else if (strcmp("GPVTG", (char*)buffer) == 0)
         _handle_vtg(idx);
     else
         return; // Unknown record
 }
 
-}
+
 
 
 static void data_received (void *arg, const uint8_t data)
