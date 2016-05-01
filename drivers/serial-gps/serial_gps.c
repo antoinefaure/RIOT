@@ -31,7 +31,10 @@ static uint8_t data_entry[SERIAL_GPS_MAXIMUM_SIZE_OF_ENTRY] = {};
  * @brief Last element in the buffer
  */
 static uint8_t buffer_index = 0;
-
+/**
+ * @brief Store all the data related to the GPS
+ */
+static struct serial_gps_t data_gps;
 
 static uint8_t entry_not_finished(uint8_t *buff)
 {
@@ -57,6 +60,11 @@ static uint8_t entry_not_finished(uint8_t *buff)
 static uint8_t _next_field_as_int(uint8_t** index, int32_t *value)
 {
     uint8_t buffer[64] = {0};
+    // *index should point on the ',' at the beginning of the field
+    if (',' == *index[0])
+        *index++;
+    if (',' == index[0])
+        return 0; // The field is empty
     uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
@@ -73,6 +81,11 @@ static uint8_t _next_field_as_int(uint8_t** index, int32_t *value)
 static uint8_t _next_field_as_double(uint8_t** index, double *value)
 {
     uint8_t buffer[64] = {0};
+    // *index should point on the ',' at the beginning of the field
+    if (',' == *index[0])
+        *index++;
+    if (',' == index[0])
+        return 0; // The field is empty
     uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
@@ -89,6 +102,12 @@ static uint8_t _next_field_as_double(uint8_t** index, double *value)
 static uint8_t _next_field_as_time(uint8_t** index, uint8_t *h, uint8_t *m, uint8_t *s)
 {
     uint8_t buffer[7] = {0}, tmp[3] = {0};
+    // *index should point on the ',' at the beginning of the field
+    if (',' == *index[0])
+        *index++;
+    if (',' == index[0])
+        return 0; // The field is empty
+
     uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
@@ -177,7 +196,8 @@ static void _handle_gga(uint8_t *idx_start)
     uint8_t hour = 0, minute = 0, second = 0;
     double latitude = 0, longitude = 0;
     uint8_t direction_latitude = 0, direction_longitude = 0;
-    uint8_t ret = 0;
+    uint8_t ret = 0, fix_quality = 0;
+    uint8_t nb_satellites = 0;
 
     ret = _next_field_as_time(&index, &hour, &minute, &second);
     if (!ret || !entry_not_finished(index))
@@ -201,6 +221,18 @@ static void _handle_gga(uint8_t *idx_start)
     if (!entry_not_finished(index))
         return;
 
+    ret = next_field_as_int(&index, &fix_quality);
+    if (!ret || fix_quality > 8 || fix_quality < 0 || !next_field_exists(index))
+        return;
+
+    ret = next_field_as_int(&index, &nb_satellites);
+    if (!ret || !next_field_exists(index))
+        return;
+
+    double horizontal_dilution = 0;
+    ret = next_field_as_double(&index, &horizontal_dilution);
+    if (!ret || next_field_exists(index)
+            return;
 }
 
 static void process_entry(void)
@@ -210,13 +242,15 @@ static void process_entry(void)
     printf("%s \n", data_entry);
     uint8_t buffer[64] = {0};
 
+    // If the entry is correct, we want to copy the first field,
+    // i.e. everything until the first ','
     while (idx < 64 && '\0' != data_entry[idx] && ',' != data_entry[idx] &&
             '\n' != data_entry[idx]) {
         buffer[idx] = data_entry[idx];
     }
 
     if (!(',' == data_entry[idx])) {
-        /* Wrong data */
+        // Wrong data
         return;
     }
 
@@ -235,8 +269,6 @@ static void process_entry(void)
     else
         return; // Unknown record
 }
-
-
 
 
 static void data_received (void *arg, const uint8_t data)
