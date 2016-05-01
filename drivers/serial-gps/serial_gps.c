@@ -35,7 +35,7 @@ static uint8_t buffer_index = 0;
 
 static uint8_t entry_not_finished(uint8_t *buff)
 {
-    if (NULL = buff)
+    if (NULL == buff)
         return 0;
     else if ('\0' == buff[0] || '\n' == buff[0])
         return 0;
@@ -54,54 +54,57 @@ static uint8_t entry_not_finished(uint8_t *buff)
 //}
 
 
-static uint8_t *_next_field_as_int(uint8_t* first_index, int32_t *value)
+static uint8_t _next_field_as_int(uint8_t** index, int32_t *value)
 {
     uint8_t buffer[64] = {0};
-    uint8_t *nextfield = (uint8_t*)strpbrk((char*)first_index, ",");
+    uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
-        return NULL;
-    if((nextfield - first_index) > 64)
-        return NULL;
+        return 0;
+    if((nextfield - *index) > 64)
+        return 0;
 
-    memcpy(buffer, first_index, (nextfield -1 - first_index));
+    memcpy(buffer, *index, (nextfield -1 - *index));
     *value = atoi((char*)buffer);
-    return nextfield;
+    *index = nextfield;
+    return 1;
 }
 
-static uint8_t *_next_field_as_double(uint8_t* first_index, double *value)
+static uint8_t _next_field_as_double(uint8_t** index, double *value)
 {
     uint8_t buffer[64] = {0};
-    uint8_t *nextfield = (uint8_t*)strpbrk((char*)first_index, ",");
+    uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
-        return NULL;
-    if((nextfield - first_index) > 64)
-        return NULL;
+        return 0;
+    if((nextfield - *index) > 64)
+        return 0;
 
-    memcpy(buffer, first_index, (nextfield -1 - first_index));
+    memcpy(buffer, *index, (nextfield -1 - *index));
     *value = atof((char*)buffer);
-    return nextfield;
+    *index = nextfield;
+    return 1;
 }
 
-static uint8_t *_next_field_as_time(uint8_t *first_index, uint8_t *h, uint8_t *m, uint8_t *s)
+static uint8_t _next_field_as_time(uint8_t** index, uint8_t *h, uint8_t *m, uint8_t *s)
 {
     uint8_t buffer[7] = {0}, tmp[3] = {0};
-    uint8_t *nextfield = (uint8_t*)strpbrk((char*)first_index, ",");
+    uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
     if (NULL == nextfield)
-        return NULL;
-    if((nextfield -first_index) > 6)
-        return NULL;
+        return 0;
+    if((nextfield - *index) > 6)
+        return 0;
 
-    memcpy(buffer, first_index, (nextfield -1 - first_index));
+    memcpy(buffer, *index, (nextfield -1 - *index));
     memcpy(tmp, buffer, 2);
     *h = atoi((char*)tmp);
     memcpy(tmp, buffer+2, 2);
     *m = atoi((char*)tmp);
     memcpy(tmp, buffer+4, 2);
     *s = atoi((char*)tmp);
-    return nextfield;
+    *index = nextfield;
+    return 1;
 }
 
 //static int checksum(char *s) {
@@ -170,32 +173,32 @@ static void _handle_vtg(uint8_t idx_start)
  */
 static void _handle_gga(uint8_t *idx_start)
 {
-    uint8_t *next_index = NULL;
+    uint8_t *index = idx_start;
     uint8_t hour = 0, minute = 0, second = 0;
     double latitude = 0, longitude = 0;
     uint8_t direction_latitude = 0, direction_longitude = 0;
-    uint8_t *ret = 0;
+    uint8_t ret = 0;
 
-    next_index = _next_field_as_time(idx_start, &hour, &minute, &second);
-    if (!entry_not_finished(next_index))
+    ret = _next_field_as_time(&index, &hour, &minute, &second);
+    if (!ret || !entry_not_finished(index))
         return;
 
-    next_index = _next_field_as_double(next_index, &latitude);
-    if (!entry_not_finished(next_index))
+    ret = _next_field_as_double(&index, &latitude);
+    if (!ret || !entry_not_finished(index))
         return;
 
-    direction_latitude = next_index[1];
-    next_index += 2;
-    if (!entry_not_finished(next_index)
+    direction_latitude = index[1];
+    index += 2;
+    if (!ret || !entry_not_finished(index))
         return;
 
-    next_index = _next_field_as_double(next_index, &longitude);
-    if (!entry_not_finished(next_index))
+    ret = _next_field_as_double(&index, &longitude);
+    if (!entry_not_finished(index))
         return;
 
-    direction_longitude = next_index[1];
-    next_index += 2;
-    if (!entry_not_finished(next_index)
+    direction_longitude = index[1];
+    index += 2;
+    if (!entry_not_finished(index))
         return;
 
 }

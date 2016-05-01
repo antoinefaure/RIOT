@@ -22,6 +22,25 @@
 extern "C" {
 #endif
 
+struct serial_gps_time_record {
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+}
+
+struct serial_gps_position {
+    uint8_t longitude;
+    uint8_t latitude;
+    uint8_t direction longitude;
+    uint8_t direction latitude;
+    struct serial_gps_time_record;
+    // Time last record ? Or time last record gll, etc... ?
+};
+
+struct serial_gps {
+    struct serial_gps_position last_position;
+};
+
 
 /**
  * @brief Initialize a new GPS device
