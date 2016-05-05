@@ -26,14 +26,14 @@ struct serial_gps_time_record_t {
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
-}
+};
 
 struct serial_gps_position_t {
     uint8_t longitude;
     uint8_t latitude;
-    uint8_t direction longitude;
-    uint8_t direction latitude;
-    struct serial_gps_time_record_t;
+    uint8_t direction_longitude;
+    uint8_t direction_latitude;
+    struct serial_gps_time_record_t time_record;
     // Time last record ? Or time last record gll, etc... ?
 };
 

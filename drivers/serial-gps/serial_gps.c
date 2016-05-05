@@ -62,8 +62,8 @@ static uint8_t _next_field_as_int(uint8_t** index, int32_t *value)
     uint8_t buffer[64] = {0};
     // *index should point on the ',' at the beginning of the field
     if (',' == *index[0])
-        *index++;
-    if (',' == index[0])
+        (*index)++;
+    if (',' == *index[0])
         return 0; // The field is empty
     uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
@@ -83,8 +83,8 @@ static uint8_t _next_field_as_double(uint8_t** index, double *value)
     uint8_t buffer[64] = {0};
     // *index should point on the ',' at the beginning of the field
     if (',' == *index[0])
-        *index++;
-    if (',' == index[0])
+        (*index)++;
+    if (',' == *index[0])
         return 0; // The field is empty
     uint8_t *nextfield = (uint8_t*)strpbrk((char*)*index, ",");
 
