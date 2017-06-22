@@ -2,10 +2,15 @@
 APPLICATION = hello-world
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= native
+BOARD ?= nucleo-f303
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
+
+FEATURES_REQUIRED = periph_i2c
+
+USEMODULE += dht
+USEMODULE += tsl2561
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
